@@ -1,38 +1,63 @@
 {
   "name": "cambridge-pub-map",
   "version": "1.0.0",
+  "private": true,
   "description": "Check in at Cambridge pubs on a London Underground style map and compare with friends",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "check-data": "node scripts/check-data.js",
-    "test:db": "scripts/test-db.sh"
-  },
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mharst84/Cambridge-pub-map.git"
   },
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/mharst84/Cambridge-pub-map/issues"
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && prisma migrate deploy && next build",
+    "build:app": "prisma generate && next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --project unit",
+    "test:db": "scripts/with-test-db.sh vitest run --project db",
+    "check-data": "node scripts/check-data.mts",
+    "postinstall": "prisma generate"
   },
-  "homepage": "https://github.com/mharst84/Cambridge-pub-map#readme",
   "dependencies": {
-    "@supabase/supabase-js": "^2.117.2",
+    "@auth/prisma-adapter": "^2.11.3",
+    "@neondatabase/serverless": "^1.1.0",
+    "@prisma/adapter-neon": "^7.10.0",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
     "d3": "^7.9.0",
-    "d3-tube-map": "^1.5.0"
+    "d3-tube-map": "^1.5.0",
+    "dotenv": "^18.0.4",
+    "next": "^16.3.6",
+    "next-auth": "^5.0.0-beta.32",
+    "nodemailer": "^10.0.11",
+    "pg": "^8.23.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "ws": "^8.22.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
-    "vite": "^8.3.1",
+    "@types/d3": "^7.4.3",
+    "@types/node": "^26.6.3",
+    "@types/nodemailer": "^8.0.2",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/ws": "^8.18.1",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.6",
+    "prisma": "^7.10.0",
+    "typescript": "^6.0.3",
     "vitest": "^5.0.2"
   },
-  "private": true,
-  "type": "module",
   "overrides": {
     "d3-tube-map": {
       "d3": "$d3"
-    }
+    },
+    "nodemailer": "$nodemailer",
+    "mysql2": "^3.23.1",
+    "deepmerge-ts": "^8"
   }
 }

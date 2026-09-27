@@ -3,3 +3,9 @@ dist
 .DS_Store
 .env.local
 .env.*.local
+lib/generated
+.next
+next-env.d.ts
+*.tsbuildinfo
+.env
+!.env.example

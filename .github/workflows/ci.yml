@@ -1,0 +1,30 @@
+name: CI
+
+# Vercel builds and deploys the app itself (see README). This workflow checks
+# every push and pull request.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check-data
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test
+      # Runs the server code against a throwaway local Postgres (preinstalled on the runner).
+      - run: npm run test:db
+      - run: npm run build:app

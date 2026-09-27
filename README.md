@@ -15,68 +15,75 @@ brought up to date. See [NOTICE.md](NOTICE.md).
 - **Progress**: pubs visited overall and per line, with a message when you finish a line.
 - **Share link**: sends a link with your name and visited pubs in it. Anyone who opens it
   sees your pubs in amber next to their own. No account needed.
-- **Friends** (optional, needs Supabase): sign in with your email, invite friends with a
+- **Friends**: sign in with a link sent to your email (no passwords), invite friends with a
   link, see a leaderboard and your friends' latest check-ins, and open any friend's map.
   Your check-ins sync across devices.
-- **Backup/restore**: without an account, check-ins are stored in the browser, so you can
-  download a backup file to move them to another device.
+- Works without an account too: check-ins are then kept on the phone, with a backup download.
 - Closed pubs stay on the map, struck through, so old check-ins aren't lost.
+
+## How it's built
+
+- **Next.js 16** (App Router, TypeScript). Route handlers in `app/api` are the backend.
+- **PostgreSQL on Neon**, through **Prisma 7** with the Neon serverless driver adapter.
+  Locally and in tests it uses the regular `pg` adapter instead (see `lib/server/db.ts`).
+- **Auth.js v5** (`next-auth@beta`) with the Prisma adapter and email sign-in links sent
+  with **nodemailer**.
+- **Vercel** for hosting.
+
+| Path | What's there |
+| --- | --- |
+| `app/page.tsx`, `components/` | The map app (client-side React; the map is drawn with d3-tube-map) |
+| `app/invite/[code]` | The page a friend's invite link opens |
+| `app/api/` | `me`, `checkins`, `friends` and Auth.js routes |
+| `lib/server/` | Database access and the rules for check-ins and friends |
+| `lib/` | Shared logic: pub data helpers, share links, local storage, syncing |
+| `prisma/` | Database schema and migrations |
+| `data/pubs.json` | The map and pub details |
 
 ## Development
 
+Needs Node 22 and a Postgres database: a free Neon branch, or a local one.
+
 ```sh
 npm install
-npm run dev          # local dev server
-npm test             # unit tests
-npm run test:db      # database security tests (needs PostgreSQL 15+ installed locally)
-npm run check-data   # validate data/pubs.json
-npm run build        # production build in dist/
+cp .env.example .env     # then fill in DATABASE_URL and AUTH_SECRET
+npx prisma migrate dev   # create the tables
+npm run dev              # http://localhost:3000
 ```
 
-To try the friends features without a Supabase project, run
-`VITE_CLOUD=fake npm run dev`. This uses a pretend backend in the browser: any email
-signs you in straight away, and opening `#invite=demo-friend` adds a made-up friend
-called Sam.
+Without `EMAIL_SERVER`, sign-in links are printed in the terminal running `npm run dev`.
 
-## Publishing
-
-Pushes to `main` are tested and deployed to GitHub Pages by
-`.github/workflows/deploy.yml`. Turn this on under **Settings → Pages → Source: GitHub Actions**.
-
-## Setting up accounts and friends (Supabase)
-
-The app works without this; the Friends button only appears once it's set up.
-
-1. Create a free project at [supabase.com](https://supabase.com).
-2. In the project's **SQL Editor**, run
-   [`supabase/migrations/20260927000000_friends.sql`](supabase/migrations/20260927000000_friends.sql).
-   (Or use the Supabase CLI: `supabase link` then `supabase db push`.)
-3. Under **Authentication → URL Configuration**, set the **Site URL** to where the app is
-   published (e.g. `https://mharst84.github.io/Cambridge-pub-map/`) and add it to the
-   **Redirect URLs** too.
-4. Optional: under **Authentication → Emails → Magic Link**, add `{{ .Token }}` to the
-   template. People can then type the code from the email instead of tapping the link,
-   which helps when their email app opens links in a different browser.
-5. Supabase's built-in email sender only sends a few emails an hour. For more people,
-   add your own SMTP provider under **Authentication → Emails → SMTP Settings**.
-6. In the GitHub repo, under **Settings → Secrets and variables → Actions → Variables**, add
-   `SUPABASE_URL` (the project URL) and `SUPABASE_ANON_KEY` (the anon/publishable key,
-   from **Project Settings → API**). Both are meant to be public. What people can see is
-   controlled by the database's row level security rules.
-
-For local development, put the same values in `.env.local`:
+Checks (CI runs all of these on every push):
 
 ```sh
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key
+npm run typecheck
+npm run lint
+npm test             # unit tests
+npm run test:db      # server tests on a throwaway local Postgres (needs PostgreSQL 15+ installed)
+npm run check-data   # validates data/pubs.json
 ```
+
+After changing `prisma/schema.prisma`, create a migration with
+`npx prisma migrate dev --name what-changed`.
+
+## Deploying (Neon + Vercel)
+
+1. **Neon**: create a project and copy two connection strings from the dashboard:
+   the pooled one (host contains `-pooler`) and the direct one.
+2. **Vercel**: import the GitHub repo. Under **Settings → Environment Variables** add:
+   - `DATABASE_URL`: Neon's pooled connection string
+   - `DIRECT_URL`: Neon's direct connection string (used for migrations)
+   - `AUTH_SECRET`: output of `npx auth secret`
+   - `EMAIL_SERVER` and `EMAIL_FROM`: your SMTP details, as in your other project
+3. Deploy. The build command in `package.json` (`prisma generate && prisma migrate deploy && next build`)
+   creates the tables on the first deploy and applies new migrations after that.
 
 ### Privacy
 
-- Only you and your friends can see your check-ins and name. Signed-out visitors see nothing.
-- Friendships are mutual. Anyone who opens your invite link becomes your friend, so only
-  send it to people you want to add. You can remove a friend at any time.
-- These rules are enforced in the database and tested in `supabase/tests/rls_test.sql`.
+- Only you and your friends can see your check-ins and name.
+- Friendships are mutual. Anyone with your invite link can add you, so only send it to
+  people you want as friends. You can remove a friend at any time.
+- These rules are enforced in `lib/server/` and tested in `test/db/server.test.ts`.
 
 ## Pub data
 

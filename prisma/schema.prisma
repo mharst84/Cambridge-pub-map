@@ -1,0 +1,99 @@
+// Database schema. After changing it, create a migration with
+//   npx prisma migrate dev --name <what-changed>
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- Auth.js ----------
+
+model User {
+  id            String    @id @default(cuid())
+  // Display name shown to friends.
+  name          String?   @db.VarChar(40)
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  // Secret code used in invite links. Anyone with it can add this user as a friend.
+  friendCode    String    @unique @default(dbgenerated("substr(replace((gen_random_uuid())::text, '-'::text, ''::text), 1, 12)"))
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts    Account[]
+  sessions    Session[]
+  checkins    Checkin[]
+  friends     Friendship[] @relation("FriendshipOwner")
+  friendOf    Friendship[] @relation("FriendshipFriend")
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// ---------- pub map ----------
+
+model Checkin {
+  id          Int      @id @default(autoincrement())
+  userId      String
+  // Station key from data/pubs.json, e.g. "Eagle".
+  pubKey      String   @db.VarChar(64)
+  checkedInAt DateTime @db.Timestamptz(3)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pubKey, checkedInAt])
+  @@index([userId, checkedInAt(sort: Desc)])
+}
+
+// Friendships are mutual and stored in both directions: (a, b) and (b, a).
+model Friendship {
+  userId    String
+  friendId  String
+  createdAt DateTime @default(now())
+
+  user   User @relation("FriendshipOwner", fields: [userId], references: [id], onDelete: Cascade)
+  friend User @relation("FriendshipFriend", fields: [friendId], references: [id], onDelete: Cascade)
+
+  @@id([userId, friendId])
+  @@index([friendId])
+}
