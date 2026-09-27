@@ -27,7 +27,13 @@ jobs:
       - run: npm ci
       - run: npm run check-data
       - run: npm test
+      - run: npm run test:db
       - run: npm run build
+        env:
+          # Public values (safe in the browser). Set them under Settings → Secrets and
+          # variables → Actions → Variables. Without them the app runs without accounts.
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
       - uses: actions/upload-pages-artifact@v4
         if: github.ref == 'refs/heads/main'
         with:

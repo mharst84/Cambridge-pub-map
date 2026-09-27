@@ -2,6 +2,7 @@ import data from "../data/pubs.json";
 import { displayName, isOpen, lineProgress, nearestPubs, openPubKeys } from "./pubs.js";
 import { buildShareHash, parseShareHash } from "./share.js";
 import { checkIn, loadState, mergeStates, saveState, undoCheckIn, visitedSet } from "./store.js";
+import { setupFriends } from "./friends.js";
 import { createTubeMap } from "./tubemap.js";
 
 const REPO_URL = "https://github.com/mharst84/Cambridge-pub-map";
@@ -169,7 +170,7 @@ function formatDate(date) {
 }
 
 function closeSheets(except) {
-  for (const id of ["pub-sheet", "nearby-sheet", "progress-drawer"]) {
+  for (const id of ["pub-sheet", "nearby-sheet", "progress-drawer", "friends-drawer"]) {
     if (id !== except) $(id).hidden = true;
   }
   if (except !== "pub-sheet") {
@@ -195,6 +196,7 @@ function update(next) {
 function doCheckIn(key) {
   const before = visitedSet(state);
   update(checkIn(state, key));
+  friends.checkedIn(key, state.checkins[key].at(-1));
   const pub = displayName(stations[key]);
   if (before.has(key)) {
     toast(`Checked in at ${pub} again`);
@@ -211,7 +213,9 @@ function doCheckIn(key) {
 $("pub-checkin").addEventListener("click", () => selectedPub && doCheckIn(selectedPub));
 $("pub-undo").addEventListener("click", () => {
   if (!selectedPub) return;
+  const removed = state.checkins[selectedPub]?.at(-1);
   update(undoCheckIn(state, selectedPub));
+  if (removed) friends.undone(selectedPub, removed);
   toast("Last check-in removed");
 });
 
@@ -230,6 +234,7 @@ $("progress-open").addEventListener("click", () => {
 
 $("my-name").addEventListener("change", (event) => {
   update({ ...state, name: event.target.value.trim().slice(0, 40) });
+  friends.nameChanged(state.name);
 });
 
 $("zoom-in").addEventListener("click", () => tube.zoomBy(1.5));
@@ -331,10 +336,10 @@ $("nearby").addEventListener("click", () => {
 $("share").addEventListener("click", async () => {
   const mine = visitedSet(state);
   const url = `${location.origin}${location.pathname}${buildShareHash(state.name, mine, stations)}`;
-  const text = `I've been to ${countOpen(mine)} of ${openKeys.length} pubs on the Cambridge Pub Tube map`;
+  const text = `I've been to ${countOpen(mine)} of ${openKeys.length} pubs on the Cambridge Pub Map`;
   if (navigator.share) {
     try {
-      await navigator.share({ title: "Cambridge Pub Tube", text, url });
+      await navigator.share({ title: "Cambridge Pub Map", text, url });
       return;
     } catch (error) {
       if (error.name === "AbortError") return;
@@ -376,7 +381,7 @@ $("import").addEventListener("change", async (event) => {
     update(mergeStates(state, JSON.parse(await file.text())));
     toast("Backup restored");
   } catch {
-    toast("That file isn't a Cambridge Pub Tube backup");
+    toast("That file isn't a Cambridge Pub Map backup");
   }
 });
 
@@ -385,5 +390,19 @@ $("data-reviewed").textContent = new Date(data.meta.lastReviewed).toLocaleDateSt
   year: "numeric",
 });
 $("report-link").href = `${REPO_URL}/issues/new?title=${encodeURIComponent("Pub update: ")}&labels=pub-data`;
+
+const friends = setupFriends({
+  getState: () => state,
+  setState: update,
+  stations,
+  toast,
+  closeSheets,
+  // Shows a friend's map the same way as a share link.
+  showFriendMap(name, visited) {
+    shared = { name, visited };
+    closeSheets();
+    render();
+  },
+});
 
 render();

@@ -29,6 +29,8 @@ export function normaliseState(input) {
   const state = emptyState();
   if (!input || typeof input !== "object") return state;
   if (typeof input.name === "string") state.name = input.name.slice(0, 40);
+  // Which account these check-ins were last synced with (see syncNow in main.js).
+  if (typeof input.syncedUserId === "string") state.syncedUserId = input.syncedUserId;
   const checkins = input.checkins && typeof input.checkins === "object" ? input.checkins : {};
   for (const [pub, visits] of Object.entries(checkins)) {
     if (!Array.isArray(visits)) continue;

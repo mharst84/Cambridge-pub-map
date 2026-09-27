@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Cambridge Pub Tube</title>
+    <title>Cambridge Pub Map</title>
     <meta name="description" content="Check in at Cambridge pubs on a London Underground style map and share your progress with friends." />
     <meta name="theme-color" content="#10137e" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' fill='none' stroke='%23dc241f' stroke-width='6'/%3E%3Crect x='1' y='12.5' width='30' height='7' fill='%2310137e'/%3E%3C/svg%3E" />
@@ -16,11 +16,14 @@
     <header class="topbar">
       <div class="brand">
         <span class="roundel" aria-hidden="true"></span>
-        <h1>Cambridge Pub Tube</h1>
+        <h1>Cambridge Pub Map</h1>
       </div>
-      <button class="progress-pill" id="progress-open" type="button" aria-label="Open my progress">
-        <span id="progress-count">0 / 0</span> pubs
-      </button>
+      <div class="topbar-buttons">
+        <button class="progress-pill" id="friends-open" type="button" hidden>Friends</button>
+        <button class="progress-pill" id="progress-open" type="button" aria-label="Open my progress">
+          <span id="progress-count">0 / 0</span> pubs
+        </button>
+      </div>
     </header>
 
     <div class="share-banner" id="share-banner" hidden>
@@ -92,10 +95,43 @@
       </div>
       <h3>About the map</h3>
       <p class="small">
-        Based on John Walley’s <a href="https://www.pubmap.co.uk/" target="_blank" rel="noopener">Cambridge Pub Map</a>,
+        Based on John Walley’s original map at <a href="https://www.pubmap.co.uk/" target="_blank" rel="noopener">pubmap.co.uk</a>,
         updated in <span id="data-reviewed"></span>. Pub closed, renamed or missing?
         <a id="report-link" target="_blank" rel="noopener">Tell us</a>.
       </p>
+    </aside>
+
+    <aside class="drawer" id="friends-drawer" hidden aria-labelledby="friends-title">
+      <button type="button" class="close" data-close aria-label="Close">×</button>
+      <h2 id="friends-title">Friends</h2>
+
+      <div id="signed-out">
+        <p class="invite-hint" id="invite-hint" hidden>Sign in to accept your friend’s invite.</p>
+        <p>Sign in to see how your friends are doing and keep your check-ins safe if you change phone.</p>
+        <form id="signin-form">
+          <label class="field">Email
+            <input type="email" id="signin-email" required autocomplete="email" placeholder="you@example.com" />
+          </label>
+          <button type="submit" class="primary">Email me a sign-in link</button>
+        </form>
+        <form id="code-form" hidden>
+          <p class="small" id="code-sent"></p>
+          <label class="field">Or type the code from the email
+            <input id="signin-code" inputmode="numeric" autocomplete="one-time-code" maxlength="10" required />
+          </label>
+          <button type="submit">Sign in</button>
+        </form>
+      </div>
+
+      <div id="signed-in" hidden>
+        <p class="small">Signed in as <span id="account-email"></span> · <button type="button" class="link inline" id="signout">Sign out</button></p>
+        <button type="button" class="primary" id="invite">Invite a friend</button>
+        <p class="small">Anyone who opens your invite link becomes your friend. You both see each other’s check-ins.</p>
+        <h3>Leaderboard</h3>
+        <ol class="leaderboard" id="leaderboard"></ol>
+        <h3>Latest from friends</h3>
+        <ul class="feed" id="feed"></ul>
+      </div>
     </aside>
 
     <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>

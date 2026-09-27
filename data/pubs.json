@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Cambridge Pub Tube Map",
+    "title": "Cambridge Pub Map",
     "basedOn": "d3-tube-map example data by John Walley (BSD-3-Clause), https://github.com/johnwalley/d3-tube-map",
     "lastReviewed": "2026-09-27"
   },
@@ -325,9 +325,12 @@
         "lon": 0.133633
       },
       "id": 24,
-      "status": "open",
+      "status": "closed",
       "needsCheck": true,
-      "note": "Some listings give a different address (Short Street). Check the location and that it is still trading."
+      "note": "CAMRA lists it as closed.",
+      "sources": [
+        "https://camra.org.uk/pubs/duke-of-cambridge-cambridge-131488"
+      ]
     },
     "Eagle": {
       "name": "Eagle",
@@ -535,7 +538,11 @@
         "lon": 0.095174
       },
       "id": 39,
-      "status": "open"
+      "status": "open",
+      "note": "Reopened in 2023 after three years closed.",
+      "sources": [
+        "https://www.cambridgeindependent.co.uk/whats-on/the-green-man-pub-in-grantchester-to-reopen-after-three-year-9287497/"
+      ]
     },
     "GreenManTrumpington": {
       "name": "Green Man",
@@ -660,7 +667,11 @@
         "lon": 0.110456
       },
       "id": 48,
-      "status": "open"
+      "status": "closed",
+      "note": "Closed for refurbishment after being bought by Heartwood Collection in 2026. It will reopen as the Meadow Lark.",
+      "sources": [
+        "https://www.cambridgeindependent.co.uk/news/heartwood-collection-acquires-the-lord-byron-pub-in-trumping-9455391/"
+      ]
     },
     "Maypole": {
       "name": "Maypole",
@@ -676,18 +687,25 @@
       "status": "open"
     },
     "Med": {
-      "name": "Med",
-      "label": "Med",
-      "address": "Perne Rd, Cambridge, CB1 3RX",
-      "phone": "01223 240808",
+      "name": "Dumpling Tree",
+      "label": "Dumpling Tree",
+      "address": "59 Perne Road, Cambridge CB1 3RX",
+      "phone": "01223 971200",
       "position": {
         "lat": 52.18913,
         "lon": 0.153427
       },
       "id": 50,
-      "status": "closed",
-      "needsCheck": true,
-      "note": "Marked closed on the original map. Reportedly now the Dumpling Tree restaurant, so check whether it still counts as a pub."
+      "status": "open",
+      "note": "The Med became the Dumpling Tree in 2019: a Chinese restaurant that is still run as a pub.",
+      "formerly": [
+        "Med",
+        "Master Mariner"
+      ],
+      "website": "https://www.thedumplingtree.com/",
+      "sources": [
+        "https://whatpub.com/pubs/CAM/122/dumpling-tree-cambridge"
+      ]
     },
     "Mill": {
       "name": "Mill",
@@ -921,8 +939,9 @@
       },
       "id": 68,
       "status": "open",
-      "needsCheck": true,
-      "note": "Reported closed for maintenance during 2024/25. Check that it has reopened."
+      "sources": [
+        "https://www.greeneking.co.uk/pubs/cambridgeshire/rock"
+      ]
     },
     "RoyalStandard": {
       "name": "Royal Standard",
