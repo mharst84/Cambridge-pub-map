@@ -20,8 +20,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth(() => ({
   pages: { verifyRequest: "/?signin=check-email", error: "/?signin=error" },
   providers: [
     Nodemailer({
-      server: process.env.EMAIL_SERVER ?? "smtp://localhost:25",
-      from: process.env.EMAIL_FROM ?? "Cambridge Pub Map <no-reply@localhost>",
+      // `||`, not `??`: hosting dashboards often create these as empty strings.
+      server: process.env.EMAIL_SERVER || "smtp://localhost:25",
+      from: process.env.EMAIL_FROM || "Cambridge Pub Map <no-reply@localhost>",
       maxAge: 60 * 60,
       async sendVerificationRequest({ identifier: email, url, provider }) {
         if (!process.env.EMAIL_SERVER) {
