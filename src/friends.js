@@ -269,6 +269,7 @@ export function setupFriends({ getState, setState, stations, toast, closeSheets,
         return;
       }
       $("friends-open").hidden = false;
+      $("demo-note").hidden = import.meta.env.VITE_CLOUD !== "fake";
       cloud.onAuthChange(handleUser);
       await handleUser(await cloud.getUser());
       if (!user && storage("get")) openDrawer();
